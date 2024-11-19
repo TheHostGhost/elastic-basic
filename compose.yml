@@ -1,0 +1,32 @@
+services:
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.0
+    environment:
+    # Disables security features. Do not use for production! Prevents needing to login.
+    # Security being disabled prevents certain features from working, like Fleet.
+      - "xpack.security.enabled=false"
+      - "path.repo=/usr/share/elasticsearch/snapshots"
+    # Prevents needing to change vm.max_map_count. 
+      - "discovery.type=single-node"
+    ports:
+      - 127.0.0.1:9200
+      # - 9200:9200
+    mem_limit: 2g
+    volumes:
+      - ./snapshots:/usr/share/elasticsearch/snapshots
+
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:8.16.0
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    ports:
+      - 127.0.0.1:5601
+      # - 5601:5601
+    mem_limit: 1g
